@@ -10,20 +10,14 @@ import cv2
 
 PIXEL_THRESHOLD = '#abe368'
 SCRIPT_INTERVAL = 0.1
-SECOND_CLICK_INTERVAL = 2
+SECOND_CLICK_INTERVAL = 4
 
 
 class Script():
-    def __init__(self, title, rox_window):
+    def __init__(self, title, rox_window, counts=100):
         self.window_title = title
         self.rox_window = rox_window
-
-    def searchroxwindow(self, window_list):
-        for w in window_list:
-            if w.title == self.window_title:
-                return w
-
-        raise Exception('No ROX window found !')
+        self.counts = counts
 
     def rgb_to_hex(self, rgb):
         """將 RGB 格式顏色轉為 HEX"""
@@ -46,7 +40,7 @@ class Script():
         pixel = np.array(pixel_color, dtype=np.int16)
         target = np.array(target_color, dtype=np.int16)
         distance = np.sqrt(np.sum((pixel - target) ** 2))  # 計算歐幾里得距離
-        print(f'distance: {distance}')
+        # print(f'distance: {distance}')
         return distance <= threshold
 
     def press_z_stop(self):
@@ -64,72 +58,32 @@ class Script():
         # print(target_x, target_y)
         last_time = time.time()
         pyautogui.click(x=target_x, y=target_y)
-        print(f'THRESHOLD: {self.hex_to_bgr(PIXEL_THRESHOLD)}')
+        # print(f'THRESHOLD: {self.hex_to_bgr(PIXEL_THRESHOLD)}')
+
+        fish_counts = 0
 
         # 擷取整個螢幕並獲取像素
         while True:
             if self.press_z_stop():
                 return
 
-            if time.time() - last_time > SCRIPT_INTERVAL:
+            if time.time() - last_time > SCRIPT_INTERVAL and fish_counts < self.counts:
                 last_time = time.time()
                 screenshot = ImageGrab.grab()
                 pixel_color = screenshot.getpixel((target_x, target_y))[::-1]  # bgr
-                print(f"視窗內相對座標 ({offset_x}, {offset_y}) 的像素顏色為：{pixel_color}")
+                # print(f"視窗內相對座標 ({offset_x}, {offset_y}) 的像素顏色為：{pixel_color}")
                 if self.is_color_close(pixel_color, self.hex_to_bgr(PIXEL_THRESHOLD)):
-                    print('click')
+                    # print('click')
                     pyautogui.click(x=target_x, y=target_y)
                     click_last_time = time.time()
 
-                    while not self.press_z_stop():
+                    while True:
+                        if self.press_z_stop():
+                            return
+
                         if time.time() - click_last_time > SECOND_CLICK_INTERVAL:
                             pyautogui.click(x=target_x, y=target_y)
                             break
 
+                    fish_counts += 1
 
-    # 獲取目標視窗
-    # window_title = "ROX"  # 修改為目標視窗的標題
-    # window = gw.getWindowsWithTitle(window_title)
-    # rox_window = ''
-    # for w in window:
-    #     if w.title == window_title:
-    #         rox_window = w
-
-    # if rox_window == '':
-    #     # print('No ROX window found')
-    #     raise Exception('No ROX window found !')
-    # 獲取視窗位置
-    # window_w, window_h = rox_window.width, rox_window.height
-    # print(f'width: {window_w} \nheight: {window_h}')
-    # rox_window.resizeTo(944, 572)
-    # window_x, window_y = rox_window.left, rox_window.top
-    # print(window_x, window_y)
-    # offset_x, offset_y = 775, 398  # 視窗內相對座標
-    # target_x, target_y = window_x + offset_x, window_y + offset_y
-    # print(target_x, target_y)
-    #
-    # # 擷取視窗範圍
-    # bbox = (rox_window.left, rox_window.top, rox_window.left + rox_window.width, rox_window.top + rox_window.height)
-    # screenshot = ImageGrab.grab(bbox)
-
-    # 儲存圖片
-    # screenshot.save("screenshot.png")
-    # print("視窗截圖已儲存為 screenshot.png")
-
-    # pixel_threshold = '#cbf76f'
-    # interval = 0.1
-    # last_time = time.time()
-    # pyautogui.click(x=target_x, y=target_y)
-    # # 擷取整個螢幕並獲取像素
-    # while True:
-    #     if keyboard.is_pressed('z'):
-    #         break
-    #
-    #     if time.time() - last_time > interval:
-    #         last_time = time.time()
-    #         screenshot = ImageGrab.grab()
-    #         pixel_color = screenshot.getpixel((target_x, target_y))[::-1] # bgr
-    #         print(f"視窗內相對座標 ({offset_x}, {offset_y}) 的像素顏色為：{pixel_color}")
-    #         if is_color_close(pixel_color, hex_to_bgr( pixel_threshold)):
-    #             print('click')
-    #             pyautogui.click(x=target_x, y=target_y, clicks=2, interval=4)

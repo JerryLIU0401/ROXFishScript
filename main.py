@@ -12,13 +12,13 @@ def searchroxwindow(window_list, window_title):
 
 roxui = Roxui()
 
-title = roxui.getEntry()
+title, counts = roxui.getEntry()
 # print(title)
 # roxui.destroy()
 
 window = searchroxwindow(gw.getWindowsWithTitle(title), title)
 
-script = Script(title, window)
+script = Script(title, window, counts)
 script.script_action()
 # print(roxui.getEntry())
 
