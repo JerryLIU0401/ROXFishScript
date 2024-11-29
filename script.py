@@ -45,9 +45,9 @@ class Script():
         """
         pixel = np.array(pixel_color, dtype=np.int16)
         target = np.array(target_color, dtype=np.int16)
-        distance = np.sqrt(np.sum((pixel - target) ** 2))  # 計算歐幾里得距離
+        distance = int(np.sqrt(np.sum((pixel - target) ** 2)))  # 計算歐幾里得距離
 
-        if self.last_distance != distanc:
+        if self.last_distance != distance:
             print(f'distance: {distance}')
             self.last_distance = distance
 
